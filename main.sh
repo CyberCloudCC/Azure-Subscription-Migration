@@ -19,7 +19,7 @@ echo AZ CLI is nu ingesteld op subscription: "$subscription_name"
 SUBSCRIPTION_ID=$(az account show --subscription "$subscription_name" | jq -r '.id')
 echo Subscription GUID ingesteld op: "$SUBSCRIPTION_ID"
 echo
-echo \#\# SAVING ALL ROLE ASSIGNMENTS \#\#
+echo \#\# SAVING ALL STANDARD ROLE ASSIGNMENTS \#\#
 az role assignment list --all --include-inherited --output json > azure-roleassignments.json
 echo azure-roleassignments.json ... Done.
 az role assignment list --all --include-inherited --output tsv > azure-roleassignments.tsv
@@ -28,6 +28,10 @@ az role assignment list --all --include-inherited --output table > azure-roleass
 echo azure-roleassignments.txt ... Done.
 echo \#\# CURRENT CUSTOM ROLES \#\#
 az role definition list --custom-role-only true --output json --query '[].{roleName:roleName, roleType:roleType}'
+echo 
+echo "Please note that you have to save each custom role above manually with the following command:"
+echo "az role definition list --name <custom_role_name> > customrolename.json"
+echo "As during development of this script, we had no actual test subscription that showed custom roles, we could not automate this yet."
 echo \#\# ROLE ASSIGNMENTS FOR MANAGED IDENTITIES \#\#
 az ad sp list --all --filter "servicePrincipalType eq 'ManagedIdentity'" > azure-managedidentities.json
 echo azure-managedidentities.json ... Done.
