@@ -37,9 +37,12 @@ az ad sp list --all --filter "servicePrincipalType eq 'ManagedIdentity'" > azure
 echo azure-managedidentities.json ... Done.
 echo 
 echo \#\# KEYVAULTS \#\#
-az keyvault show
-az keyvault show > azure-keyvaults.json 
-echo azure-keyvaults.json ... Done.
+echo .. 
+for kv in $(az keyvault list | jq -r '.[].name'); do
+   echo $kv ... saving to azure-kv-$kv.json
+   az keyvault show --name $kv >> azure-kv-$kv.json
+done
+echo Done.
 echo
 echo \#\# Azure SQL databases with Azure AD authentication \#\#
 IDS=$(az graph query -q 'resources | where type == "microsoft.sql/servers" | project id' -o tsv | cut -f1)
