@@ -4,20 +4,18 @@
 # Company: Cyber Cloud
 # URL: https://www.cybercloud.cc
 
-read -p "Hoe heet je? " varname
-echo Hallo "$varname" ! Wat fijn om je weer te zien..! 
-echo Eerst moeten we even checken of je de AZ CLI Resource Graph extensie hebt geïnstalleerd:
+echo Check for AZ CLI Resource Graph extension:
 az config set extension.use_dynamic_install=yes_without_prompt
 az extension add --name resource-graph
-echo Laten we eerst even kijken of je ingelogd bent.
+echo Login check.
 az login
-echo Nu kunnen we verder, jouw Azure Subscriptions zijn de volgende:
+echo Your subscriptions are as follows:
 az account list | jq -r '.[] | .name'
-read -p "Typ nu de naam van de subscription die je wilt verplaatsen (er gebeurt nog niks hoor): " subscription_name
+read -p "Type subscription name you want to transfer (nothing will happen yet) " subscription_name
 az account set --subscription "$subscription_name"
-echo AZ CLI is nu ingesteld op subscription: "$subscription_name"
+echo AZ CLI has been set to subscription: "$subscription_name"
 SUBSCRIPTION_ID=$(az account show --subscription "$subscription_name" | jq -r '.id')
-echo Subscription GUID ingesteld op: "$SUBSCRIPTION_ID"
+echo Subscription GUID is: "$SUBSCRIPTION_ID"
 echo
 echo \#\# SAVING ALL STANDARD ROLE ASSIGNMENTS \#\#
 az role assignment list --all --include-inherited --output json > azure-roleassignments.json
@@ -54,16 +52,21 @@ else
       az sql server ad-admin list --ids $IDS > azure-sql-databases-with-ad-authentication.json
       echo "azure-sql-databases-with-ad-authentication.json ... Done."
 fi
-
+echo
+echo \#\# AZURE AD OBJECTS \#\#
+echo ... saving azure-ad-user-list.json
+az ad user list > azure-ad-user-list.json
+echo Done.
+echo
 echo \#\# OTHER KNOWN RESOURCES \#\#
 az graph query -q 'resources | where type != "microsoft.azureactivedirectory/b2cdirectories" | where  identity <> "" or properties.tenantId <> "" or properties.encryptionSettingsCollection.enabled == true | project name, type, kind, identity, tenantId, properties.tenantId' --subscriptions $SUBSCRIPTION_ID --output table > azure-other-known-resources.json
 echo azure-other-known-resources.json ... Done.
 
 echo \#\# WARNING \#\#
-echo Controleer de volgende Azure resources handmatig en verifieer op aanwezigheid van ACLs:
+echo Check the following Azure resources manually and verify any attached ACLs:
 echo 1. Azure Data Lake Storage Gen1, 
 echo 2. Azure Data Lake Storage Gen2
 echo 3. Azure Files
 echo
-echo Bedankt voor het gebruik van dit script!
+echo Thank you for using this script.
 
